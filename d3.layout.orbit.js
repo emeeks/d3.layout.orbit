@@ -11,14 +11,34 @@ d3.layout.orbit = function() {
     var orbitDepthAdjust = function() {return 2.95};
     var childrenAccessor = function(d) {return d.children};
     var tickRadianFunction = function() {return 1};
+    var fixedOrbitArray = [99];
+    var orbitMode = "flat";
+
 
 	function _orbitLayout() {
 
 		return _orbitLayout;
 	}
 
-	_orbitLayout.mode = function() {
+	_orbitLayout.mode = function(_mode) {
 		//Atomic, Solar, other?
+		if (!arguments.length) return orbitMode;
+
+		if (_mode == "solar") {
+			fixedOrbitArray = [1]
+		}
+		if (_mode == "atomic") {
+			fixedOrbitArray = [2,8]
+		}
+		if (_mode == "flat") {
+			fixedOrbitArray = [99]
+		}
+		orbitMode = _mode;
+		if (Array.isArray(_mode)) {
+			fixedOrbitArray = _mode;
+			orbitMode = "custom";
+		}
+		return this
 	}
 
 	_orbitLayout.start = function() {
@@ -28,8 +48,8 @@ d3.layout.orbit = function() {
 			currentTickStep++;
 			flattenedNodes.forEach(function(_node){
 				if (_node.parent) {
-					_node.x = _node.parent.x + ( (_node.parent.ring / 2) * Math.sin( _node.angle + (currentTickStep * tickRadianStep * tickRadianFunction(_node))) );
-					_node.y = _node.parent.y + ( (_node.parent.ring / 2) * Math.cos( _node.angle + (currentTickStep * tickRadianStep * tickRadianFunction(_node))) );
+					_node.x = _node.parent.x + ( (_node.ring) * Math.sin( _node.angle + (currentTickStep * tickRadianStep * tickRadianFunction(_node))) );
+					_node.y = _node.parent.y + ( (_node.ring) * Math.cos( _node.angle + (currentTickStep * tickRadianStep * tickRadianFunction(_node))) );
 				}
 			})
 			orbitalRings.forEach(function(_ring) {
@@ -100,6 +120,7 @@ d3.layout.orbit = function() {
 
 	return _orbitLayout;
 	function calculateNodes() {
+	    orbitalRings = [];
 		var _data = nestedNodes; 
 	//If you have an array of elements, then create a root node (center)
 		//In the future, maybe make a binary star kind of thing?
@@ -115,41 +136,87 @@ d3.layout.orbit = function() {
 		}
 			orbitNodes.x = orbitSize[0] / 2;
 			orbitNodes.y = orbitSize[1] / 2;
-			orbitNodes.deltaX = function(_x) {return _x}
-			orbitNodes.deltaY = function(_y) {return _y}
 			orbitNodes.ring = orbitSize[0] / 2;
 			orbitNodes.depth = 0;
 
 			flattenedNodes.push(orbitNodes);
 
-			traverseNestedData(orbitNodes)
+				traverseNestedData(orbitNodes);
 
 		function traverseNestedData(_node) {
 			if(childrenAccessor(_node)) {
-				var thisPie = d3.layout.pie().value(function(d) {return childrenAccessor(d) ? 4 : 1});
-				var piedValues = thisPie(childrenAccessor(_node));
-
-				orbitalRings.push({source: _node, x: _node.x, y: _node.y, r: _node.ring / 2});
-
-				for (var x = 0; x<childrenAccessor(_node).length;x++) {
-
-					childrenAccessor(_node)[x].angle = ((piedValues[x].endAngle - piedValues[x].startAngle) / 2) + piedValues[x].startAngle;
-
-					childrenAccessor(_node)[x].parent = _node;
-					childrenAccessor(_node)[x].depth = _node.depth + 1;
-
-					childrenAccessor(_node)[x].x = childrenAccessor(_node)[x].parent.x + ( (childrenAccessor(_node)[x].parent.ring / 2) * Math.sin( childrenAccessor(_node)[x].angle ) );
-					childrenAccessor(_node)[x].y = childrenAccessor(_node)[x].parent.y + ( (childrenAccessor(_node)[x].parent.ring / 2) * Math.cos( childrenAccessor(_node)[x].angle ) );
-
-					childrenAccessor(_node)[x].deltaX = function(_x) {return _x}
-					childrenAccessor(_node)[x].deltaY = function(_y) {return _y}
-					childrenAccessor(_node)[x].ring = childrenAccessor(_node)[x].parent.ring / orbitDepthAdjust(_node);
-
-					flattenedNodes.push(childrenAccessor(_node)[x]);
-					traverseNestedData(childrenAccessor(_node)[x]);
+				var y = 0;
+				var totalChildren = childrenAccessor(_node).length;
+				var _rings = 0;
+				var _total_positions = 0;
+				var _p = 0;
+				while (_total_positions < totalChildren) {
+					if (fixedOrbitArray[_p]) {
+						_total_positions += fixedOrbitArray[_p];
+					}
+					else {
+						_total_positions += fixedOrbitArray[fixedOrbitArray.length - 1];						
+					}
+					_p++;
+					_rings++;
 				}
+
+				while (y < totalChildren) {
+					var _pos = 0;
+					var _currentRing = 0;
+					var _p = 0;
+					var _total_positions = 0;
+
+				while (_total_positions <= y) {
+					if (fixedOrbitArray[_p]) {
+						_total_positions += fixedOrbitArray[_p];
+					}
+					else {
+						_total_positions += fixedOrbitArray[fixedOrbitArray.length-1];						
+					}
+
+						_p++;
+						_currentRing++;
+				}
+
+				var ringSize = fixedOrbitArray[fixedOrbitArray.length-1];
+
+				if (fixedOrbitArray[_currentRing-1]) {
+					ringSize = fixedOrbitArray[_currentRing-1];
+				}
+
+					if (_node.parent) {
+						var _ring = {source: _node, x: _node.x, y: _node.y, r: _node.parent.ring / orbitDepthAdjust(_node) * (_currentRing / _rings)};
+					}
+					else {
+						var _ring = {source: _node, x: _node.x, y: _node.y, r: (orbitSize[0] / 2) * (_currentRing / _rings)};
+					}
+
+
+					var thisPie = d3.layout.pie().value(function(d) {return childrenAccessor(d) ? 4 : 1});
+					var piedValues = thisPie(childrenAccessor(_node).filter(function(d,i) {return i >= y && i <= y+ringSize-1}));
+
+					for (var x = y; x<y+ringSize && x<totalChildren;x++) {
+						childrenAccessor(_node)[x].angle = ((piedValues[x - y].endAngle - piedValues[x - y].startAngle) / 2) + piedValues[x - y].startAngle;
+
+						childrenAccessor(_node)[x].parent = _node;
+						childrenAccessor(_node)[x].depth = _node.depth + 1;
+
+						childrenAccessor(_node)[x].x = childrenAccessor(_node)[x].parent.x + ( (childrenAccessor(_node)[x].parent.ring / 2) * Math.sin( childrenAccessor(_node)[x].angle ) );
+						childrenAccessor(_node)[x].y = childrenAccessor(_node)[x].parent.y + ( (childrenAccessor(_node)[x].parent.ring / 2) * Math.cos( childrenAccessor(_node)[x].angle ) );
+
+						childrenAccessor(_node)[x].ring = _ring.r;
+
+						flattenedNodes.push(childrenAccessor(_node)[x]);
+						traverseNestedData(childrenAccessor(_node)[x]);
+					}
+					orbitalRings.push(_ring);
+					y+=ringSize;
+				}
+
 			}
 		}
+
 	}
 
 }
