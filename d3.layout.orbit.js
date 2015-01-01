@@ -121,19 +121,8 @@ d3.layout.orbit = function() {
 	return _orbitLayout;
 	function calculateNodes() {
 	    orbitalRings = [];
-		var _data = nestedNodes; 
-	//If you have an array of elements, then create a root node (center)
-		//In the future, maybe make a binary star kind of thing?
-		if (!childrenAccessor(_data)) {
-			orbitNodes = {key: "root", values: _data}
-			childrenAccessor(orbitNodes).forEach(function (_node) {
-				_node.parent = orbitNodes;
-			})
-		}
-		//otherwise assume it is an object with a root node
-		else {
-			orbitNodes = _data;
-		}
+			orbitNodes = nestedNodes;
+
 			orbitNodes.x = orbitSize[0] / 2;
 			orbitNodes.y = orbitSize[1] / 2;
 			orbitNodes.ring = orbitSize[0] / 2;
@@ -141,9 +130,10 @@ d3.layout.orbit = function() {
 
 			flattenedNodes.push(orbitNodes);
 
-				traverseNestedData(orbitNodes);
+			traverseNestedData(orbitNodes);
 
 		function traverseNestedData(_node) {
+
 			if(childrenAccessor(_node)) {
 				var y = 0;
 				var totalChildren = childrenAccessor(_node).length;
