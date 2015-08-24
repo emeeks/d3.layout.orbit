@@ -3,6 +3,8 @@ d3.layout.orbit
 
 ![d3.layout.orbit](screenshot.png "d3.layout.orbit")
 
+`npm install d3-layout-orbit`
+
 An animated hierarchical layout for d3.js that creates orbits from nested data.
 
 You can see an interactive example [here](http://bl.ocks.org/emeeks/298e07ea67a640b5d9f4).

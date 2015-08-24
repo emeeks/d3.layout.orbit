@@ -1,0 +1,35 @@
+{
+  "name": "d3-layout-orbit",
+  "version": "1.0.0",
+  "description": "A layout that represents hierarchical data as a series of nested orbits",
+  "main": "index.js",
+  "keywords": [
+    "d3",
+    "generator",
+    "layout",
+    "hierarchical"
+  ],
+  "directories": {
+    "examples": "examples"
+  },
+  "dependencies": {
+    "d3": "^3.5.6"
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emeeks/d3.layout.orbit"
+  },
+  "author": {
+    "name": "Elijah Meeks",
+    "url": "http://www.elijahmeeks.com"
+  },
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/emeeks/d3.layout.orbit/issues"
+  },
+  "homepage": "https://github.com/emeeks/d3.layout.orbit"
+}
