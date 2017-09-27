@@ -13,12 +13,10 @@
     "examples": "examples"
   },
   "dependencies": {
-    "d3": "^3.5.6"
+    "d3": "^4.10.2"
   },
-  "devDependencies": {
-  },
-  "scripts": {
-  },
+  "devDependencies": {},
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/emeeks/d3.layout.orbit"
