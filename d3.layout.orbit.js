@@ -1,4 +1,4 @@
-d3.layout.orbit = function() {
+d3.orbit = function() {
 	var currentTickStep = 0;
 	var orbitNodes;
 	var orbitSize = [1,1];
@@ -56,7 +56,7 @@ d3.layout.orbit = function() {
 				_ring.x = _ring.source.x;
 				_ring.y = _ring.source.y;
 			})
-			orbitDispatch.tick();
+			orbitDispatch.call('tick');
 		}, 
 		10);
 	}
@@ -116,7 +116,10 @@ d3.layout.orbit = function() {
 
 	}
 
-    d3.rebind(_orbitLayout, orbitDispatch, "on");
+  _orbitLayout.on = function() {
+    var value = orbitDispatch.on.apply(orbitDispatch, arguments);
+    return value === orbitDispatch ? _orbitLayout : value;
+  };
 
 	return _orbitLayout;
 	function calculateNodes() {
@@ -183,7 +186,7 @@ d3.layout.orbit = function() {
 					}
 
 
-					var thisPie = d3.layout.pie().value(function(d) {return childrenAccessor(d) ? 4 : 1});
+					var thisPie = d3.pie().value(function(d) {return childrenAccessor(d) ? 4 : 1});
 					var piedValues = thisPie(childrenAccessor(_node).filter(function(d,i) {return i >= y && i <= y+ringSize-1}));
 
 					for (var x = y; x<y+ringSize && x<totalChildren;x++) {
