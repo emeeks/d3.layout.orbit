@@ -131,6 +131,7 @@ module.exports = function() {
       orbitNodes.ring = orbitSize[0] / 2;
       orbitNodes.depth = 0;
 
+      flattenedNodes = [];
       flattenedNodes.push(orbitNodes);
 
       traverseNestedData(orbitNodes);
