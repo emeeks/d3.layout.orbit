@@ -1,3 +1,5 @@
+var d3 = require('d3');
+
 module.exports = function() {
   var currentTickStep = 0;
   var orbitNodes;
